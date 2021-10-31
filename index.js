@@ -72,13 +72,14 @@ const run = async () => {
 
     // Create new order
     app.post('/api/orders', async (req, res) => {
-      const { name, email, phone, product } = req.body;
-      product.orderStatus = 'Pending';
+      const { name, email, phone, room } = req.body;
+
       const newOrder = {
         name,
         email,
         phone,
-        product,
+        room,
+        orderStatus: 'Pending',
       };
 
       const result = await orderCollection.insertOne(newOrder);
