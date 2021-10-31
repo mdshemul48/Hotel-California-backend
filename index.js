@@ -10,10 +10,8 @@ const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-console.log(process.env.DB_USER, process.env.DB_PASS);
-
 // MongoDb
-const uri = `mongodb+srv://Google:GGbois@cluster0.91aij.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.91aij.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -47,22 +45,29 @@ const run = async () => {
       res.send(orders);
     });
 
-    // Get order by id
-    app.get('/api/orders/:id', async (req, res) => {
-      const order = await orderCollection.findOne({
-        _id: ObjectId(req.params.id),
-      });
-      res.send(order);
+    // get all orders
+    app.get('/api/orders/:email', async (req, res) => {
+      try {
+        const { email } = req.params;
+        const orders = await orderCollection.find({ email }).toArray();
+        return res.status(200).json(orders);
+      } catch (err) {
+        return res.status(500).json({ result: 'error' });
+      }
     });
 
     // Create new room
     app.post('/api/rooms', async (req, res) => {
-      const { name, description, price, image } = req.body;
-      const newRoom = { name, description, price, image };
-      const result = await roomsCollection.insertOne(newRoom);
-      const newId = result.insertedId;
-      const newRoomWithId = await roomsCollection.findOne({ _id: newId });
-      res.send(newRoomWithId);
+      try {
+        const { name, description, price, image } = req.body;
+        const newRoom = { name, description, price, image };
+        await roomsCollection.insertOne(newRoom);
+        return res
+          .status(201)
+          .json({ result: 'successfully created new Room' });
+      } catch (err) {
+        return res.status(500).json({ result: 'error' });
+      }
     });
 
     // Create new order
