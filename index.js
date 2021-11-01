@@ -45,7 +45,7 @@ const run = async () => {
       res.send(orders);
     });
 
-    // get all orders
+    // get all orders using email
     app.get('/api/orders/:email', async (req, res) => {
       try {
         const { email } = req.params;
@@ -95,6 +95,13 @@ const run = async () => {
         { _id: ObjectId(id) },
         { $set: { orderStatus: 'Approved' } }
       );
+      res.send(result);
+    });
+
+    // delete order using id
+    app.delete('/api/orders/:id', async (req, res) => {
+      const { id } = req.params;
+      const result = await orderCollection.deleteOne({ _id: ObjectId(id) });
       res.send(result);
     });
   } finally {
